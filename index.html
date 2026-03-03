@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinelle — La caméra intelligente qui vous appartient vraiment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --noir: #0a0a0a;
+      --blanc: #f5f2eb;
+      --creme: #ede8dc;
+      --ambre: #c8782a;
+      --ambre-clair: #e8943a;
+      --vert: #2a5c3f;
+      --gris: #6b6560;
+      --gris-clair: #d4cfc6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--noir);
+      color: var(--blanc);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(200,120,42,0.15);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 900;
+      letter-spacing: 0.08em;
+      color: var(--ambre);
+    }
+    .nav-links { display: flex; gap: 2.5rem; }
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gris-clair); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--ambre); }
+    .nav-cta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+      background: var(--ambre); color: var(--noir);
+      border: none; padding: 0.7rem 1.6rem;
+      cursor: pointer; font-weight: 500;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover { background: var(--ambre-clair); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 8rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 70% 50%, rgba(200,120,42,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(200,120,42,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,120,42,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .hero-left { position: relative; z-index: 2; }
+    .hero-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--ambre); border: 1px solid var(--ambre);
+      padding: 0.4rem 1rem; margin-bottom: 2rem;
+      opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 6vw, 5.5rem);
+      font-weight: 900; line-height: 1.0;
+      margin-bottom: 1.5rem;
+      opacity: 0; animation: fadeUp 0.7s ease 0.4s forwards;
+    }
+    .hero-title em {
+      font-style: italic; color: var(--ambre);
+    }
+    .hero-sub {
+      font-size: 1.1rem; line-height: 1.7;
+      color: var(--gris-clair);
+      max-width: 500px; margin-bottom: 3rem;
+      opacity: 0; animation: fadeUp 0.7s ease 0.6s forwards;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      opacity: 0; animation: fadeUp 0.7s ease 0.8s forwards;
+    }
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase;
+      background: var(--ambre); color: var(--noir);
+      border: none; padding: 1rem 2.4rem;
+      cursor: pointer; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { background: var(--ambre-clair); transform: translateY(-1px); }
+    .btn-secondary {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase;
+      background: transparent; color: var(--blanc);
+      border: 1px solid rgba(245,242,235,0.3); padding: 1rem 2.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--ambre); color: var(--ambre); }
+
+    /* Hero visual */
+    .hero-right {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .camera-viz {
+      width: 360px; height: 360px;
+      position: relative;
+    }
+    .camera-ring {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(200,120,42,0.2);
+      animation: rotate 20s linear infinite;
+    }
+    .camera-ring:nth-child(2) {
+      inset: 20px;
+      border-color: rgba(200,120,42,0.15);
+      animation-direction: reverse; animation-duration: 15s;
+    }
+    .camera-ring:nth-child(3) {
+      inset: 40px;
+      border-color: rgba(200,120,42,0.1);
+      animation-duration: 25s;
+    }
+    .camera-dot {
+      position: absolute; width: 8px; height: 8px;
+      background: var(--ambre); border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 0 4px rgba(200,120,42,0.2), 0 0 0 8px rgba(200,120,42,0.1);
+    }
+    .camera-scan {
+      position: absolute; inset: 0;
+      background: conic-gradient(from 0deg, rgba(200,120,42,0.15) 0deg, transparent 60deg, transparent 360deg);
+      border-radius: 50%;
+      animation: rotate 4s linear infinite;
+    }
+    .camera-label {
+      position: absolute; bottom: -40px; left: 50%;
+      transform: translateX(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--ambre); white-space: nowrap;
+    }
+    .detection-badge {
+      position: absolute;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+      background: rgba(10,10,10,0.9);
+      border: 1px solid rgba(200,120,42,0.4);
+      padding: 0.4rem 0.8rem; color: var(--ambre);
+    }
+    .db1 { top: 30px; right: -20px; animation: pulse 3s ease-in-out infinite; }
+    .db2 { bottom: 80px; left: -30px; animation: pulse 3s ease-in-out infinite 1.5s; }
+    .db3 { top: 50%; right: -40px; transform: translateY(-50%); animation: pulse 3s ease-in-out infinite 0.8s; }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      background: var(--ambre);
+      padding: 2rem 4rem;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem; font-weight: 900;
+      color: var(--noir); display: block;
+    }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: rgba(10,10,10,0.65);
+    }
+
+    /* ─── PROGRESS ─── */
+    .funding-section {
+      background: var(--creme);
+      padding: 5rem 4rem;
+      color: var(--noir);
+    }
+    .funding-inner {
+      max-width: 900px; margin: 0 auto;
+    }
+    .funding-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--ambre); margin-bottom: 1rem;
+    }
+    .funding-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 4rem; font-weight: 900;
+      color: var(--noir); line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .funding-goal {
+      font-size: 1rem; color: var(--gris);
+      margin-bottom: 2rem;
+    }
+    .progress-bar {
+      height: 6px; background: var(--gris-clair);
+      border-radius: 3px; overflow: hidden;
+      margin-bottom: 3rem;
+    }
+    .progress-fill {
+      height: 100%; width: 67%;
+      background: var(--ambre);
+      border-radius: 3px;
+      animation: fillBar 1.5s ease 0.5s both;
+    }
+    .funding-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    .fstat { border-left: 2px solid var(--ambre); padding-left: 1.5rem; }
+    .fstat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; font-weight: 700; color: var(--noir);
+    }
+    .fstat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gris);
+    }
+
+    /* ─── PROBLEM ─── */
+    .section {
+      padding: 7rem 4rem;
+    }
+    .section-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--ambre); display: block; margin-bottom: 1.5rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 900; line-height: 1.15;
+      margin-bottom: 2rem;
+    }
+    .section-title em { font-style: italic; color: var(--ambre); }
+
+    .problem-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: start;
+      margin-top: 3rem;
+    }
+    .problem-text p {
+      color: var(--gris-clair); line-height: 1.8; margin-bottom: 1.5rem;
+    }
+    .problem-cards { display: flex; flex-direction: column; gap: 1rem; }
+    .problem-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 3px solid var(--ambre);
+      padding: 1.5rem;
+    }
+    .problem-card h4 {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ambre); margin-bottom: 0.5rem;
+    }
+    .problem-card p { font-size: 0.9rem; color: var(--gris-clair); line-height: 1.6; }
+
+    /* ─── SOLUTION / FEATURES ─── */
+    .features-section {
+      background: var(--creme);
+      color: var(--noir);
+      padding: 7rem 4rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 4rem;
+      border: 2px solid var(--noir);
+    }
+    .feature-card {
+      padding: 2.5rem;
+      border-right: 2px solid var(--noir);
+      border-bottom: 2px solid var(--noir);
+      background: var(--creme);
+      transition: background 0.3s;
+    }
+    .feature-card:hover { background: var(--ambre); }
+    .feature-card:hover .fc-title,
+    .feature-card:hover .fc-body { color: var(--noir); }
+    .feature-card:nth-child(3), .feature-card:nth-child(6) { border-right: none; }
+    .feature-card:nth-child(4), .feature-card:nth-child(5), .feature-card:nth-child(6) { border-bottom: none; }
+    .fc-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem; font-weight: 900;
+      color: var(--gris-clair); line-height: 1;
+      margin-bottom: 1rem;
+      transition: color 0.3s;
+    }
+    .feature-card:hover .fc-num { color: rgba(10,10,10,0.3); }
+    .fc-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 500;
+      color: var(--noir); margin-bottom: 0.8rem;
+    }
+    .fc-body {
+      font-size: 0.88rem; line-height: 1.7;
+      color: var(--gris);
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .steps-section { padding: 7rem 4rem; }
+    .steps { margin-top: 4rem; display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: grid; grid-template-columns: 80px 1fr;
+      gap: 3rem; align-items: start;
+      padding: 3rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem; font-weight: 900;
+      color: var(--ambre); line-height: 1;
+    }
+    .step-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+    .step-body {
+      color: var(--gris-clair); line-height: 1.8; font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+    .step-tech {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .tech-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      background: rgba(200,120,42,0.1);
+      border: 1px solid rgba(200,120,42,0.2);
+      color: var(--ambre); padding: 0.3rem 0.7rem;
+    }
+
+    /* ─── COMPARAISON ─── */
+    .compare-section {
+      background: #0f0f0f;
+      padding: 7rem 4rem;
+    }
+    .compare-table {
+      margin-top: 4rem;
+      border: 1px solid rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+    .compare-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      background: var(--ambre); color: var(--noir);
+      padding: 1rem 2rem;
+    }
+    .compare-header span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      font-weight: 500;
+    }
+    .compare-header span:not(:first-child) { text-align: center; }
+    .compare-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      align-items: center;
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-row:hover { background: rgba(255,255,255,0.02); }
+    .compare-row span:not(:first-child) { text-align: center; font-size: 0.85rem; }
+    .compare-feat { font-size: 0.9rem; color: var(--gris-clair); }
+    .check { color: var(--ambre); font-size: 1.1rem; }
+    .cross { color: rgba(255,255,255,0.2); }
+    .highlight-col { color: var(--blanc) !important; font-weight: 500; }
+
+    /* ─── PALIERS (REWARDS) ─── */
+    .rewards-section { padding: 7rem 4rem; }
+    .rewards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 4rem;
+    }
+    .reward-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 2.5rem;
+      position: relative;
+      transition: border-color 0.3s;
+    }
+    .reward-card:hover { border-color: var(--ambre); }
+    .reward-card.featured {
+      border-color: var(--ambre);
+      background: rgba(200,120,42,0.04);
+    }
+    .featured-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase;
+      background: var(--ambre); color: var(--noir);
+      padding: 0.3rem 1rem;
+    }
+    .reward-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem; font-weight: 900;
+      color: var(--ambre); margin-bottom: 0.3rem;
+    }
+    .reward-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.1rem; font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .reward-backers {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gris); margin-bottom: 1.5rem;
+    }
+    .reward-divider {
+      height: 1px; background: rgba(255,255,255,0.08);
+      margin-bottom: 1.5rem;
+    }
+    .reward-perks { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+    .reward-perks li {
+      font-size: 0.88rem; color: var(--gris-clair);
+      display: flex; align-items: flex-start; gap: 0.8rem; line-height: 1.5;
+    }
+    .reward-perks li::before {
+      content: '→'; color: var(--ambre); flex-shrink: 0;
+    }
+    .reward-cta {
+      display: block; width: 100%; margin-top: 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      background: transparent; color: var(--ambre);
+      border: 1px solid var(--ambre);
+      padding: 0.9rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .reward-card.featured .reward-cta {
+      background: var(--ambre); color: var(--noir);
+    }
+    .reward-cta:hover { background: var(--ambre); color: var(--noir); }
+
+    /* ─── TIMELINE ─── */
+    .timeline-section {
+      background: var(--creme); color: var(--noir);
+      padding: 7rem 4rem;
+    }
+    .timeline {
+      margin-top: 4rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      border: 2px solid var(--noir);
+    }
+    .timeline-item {
+      padding: 2rem;
+      border-right: 2px solid var(--noir);
+      position: relative;
+    }
+    .timeline-item:last-child { border-right: none; }
+    .tl-phase {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--ambre); margin-bottom: 0.5rem;
+    }
+    .tl-date {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;
+    }
+    .tl-tasks { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .tl-tasks li {
+      font-size: 0.82rem; color: var(--gris);
+      padding-left: 1rem; position: relative;
+    }
+    .tl-tasks li::before {
+      content: '·'; position: absolute; left: 0; color: var(--ambre);
+    }
+
+    /* ─── TEAM ─── */
+    .team-section { padding: 7rem 4rem; }
+    .team-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 2rem; margin-top: 4rem; max-width: 800px;
+    }
+    .team-card {
+      display: flex; gap: 1.5rem; align-items: flex-start;
+      padding: 2rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .team-avatar {
+      width: 56px; height: 56px;
+      background: var(--ambre); border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 900; color: var(--noir);
+    }
+    .team-name { font-size: 1rem; font-weight: 500; margin-bottom: 0.2rem; }
+    .team-role {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ambre); margin-bottom: 0.5rem;
+    }
+    .team-bio { font-size: 0.82rem; color: var(--gris-clair); line-height: 1.6; }
+
+    /* ─── FAQ ─── */
+    .faq-section { background: #0f0f0f; padding: 7rem 4rem; }
+    .faq-list { margin-top: 4rem; max-width: 800px; }
+    .faq-item {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 2rem 0;
+    }
+    .faq-q {
+      font-size: 1rem; font-weight: 500; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .faq-q::after { content: '+'; color: var(--ambre); font-size: 1.3rem; }
+    .faq-a {
+      font-size: 0.9rem; color: var(--gris-clair); line-height: 1.8;
+    }
+
+    /* ─── CTA FINAL ─── */
+    .cta-section {
+      padding: 10rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(200,120,42,0.08) 0%, transparent 70%);
+    }
+    .cta-section .section-title { font-size: clamp(2.5rem, 5vw, 4rem); }
+    .cta-sub {
+      color: var(--gris-clair); font-size: 1rem; line-height: 1.7;
+      max-width: 600px; margin: 0 auto 3rem;
+    }
+    .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--noir);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 3rem 4rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 900; color: var(--ambre);
+    }
+    .footer-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gris);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gris); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--ambre); }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    @keyframes fillBar {
+      from { width: 0; }
+      to { width: 67%; }
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 3rem; }
+      .hero-right { display: none; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); padding: 2rem 1.5rem; }
+      .section, .features-section, .steps-section, .compare-section,
+      .rewards-section, .timeline-section, .team-section, .faq-section,
+      .cta-section, .funding-section { padding: 5rem 1.5rem; }
+      .problem-grid, .features-grid, .rewards-grid, .team-grid { grid-template-columns: 1fr; }
+      .timeline { grid-template-columns: 1fr 1fr; }
+      .compare-header, .compare-row { grid-template-columns: 2fr 1fr 1fr; }
+      .compare-header span:nth-child(3), .compare-row span:nth-child(3) { display: none; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">Sentinelle</div>
+    <div class="nav-links">
+      <a href="#solution">Solution</a>
+      <a href="#comment">Comment ça marche</a>
+      <a href="#paliers">Paliers</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <button class="nav-cta" onclick="document.getElementById('paliers').scrollIntoView({behavior:'smooth'})">Je soutiens</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-left">
+      <span class="hero-badge">Campagne de financement participatif</span>
+      <h1 class="hero-title">
+        La caméra qui<br>vous <em>appartient</em><br>vraiment.
+      </h1>
+      <p class="hero-sub">
+        Sentinelle est une caméra de sécurité intelligente à base de Raspberry Pi et d'IA locale. Aucun abonnement. Aucune donnée dans le cloud. Une protection premium pour moins de 130€.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="document.getElementById('paliers').scrollIntoView({behavior:'smooth'})">Soutenir le projet</button>
+        <button class="btn-secondary" onclick="document.getElementById('comment').scrollIntoView({behavior:'smooth'})">Comment ça fonctionne</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="camera-viz">
+        <div class="camera-ring"></div>
+        <div class="camera-ring"></div>
+        <div class="camera-ring"></div>
+        <div class="camera-scan"></div>
+        <div class="camera-dot"></div>
+        <div class="detection-badge db1">Personne détectée</div>
+        <div class="detection-badge db2">IA locale — 0ms latence cloud</div>
+        <div class="detection-badge db3">Confiance 98.4%</div>
+        <div class="camera-label">Sentinelle Mk.1 — IA embarquée</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num">0€</span>
+      <span class="stat-label">d'abonnement mensuel</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">130€</span>
+      <span class="stat-label">coût hardware total</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">30 fps</span>
+      <span class="stat-label">détection IA temps réel</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">données chez vous</span>
+    </div>
+  </div>
+
+  <!-- FUNDING PROGRESS -->
+  <div class="funding-section" id="progression">
+    <div class="funding-inner">
+      <div class="funding-label reveal">Financement en cours</div>
+      <div class="funding-amount reveal">8 420 €</div>
+      <div class="funding-goal reveal">collectés sur 12 500 € — 23 jours restants</div>
+      <div class="progress-bar reveal">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="funding-stats">
+        <div class="fstat reveal">
+          <div class="fstat-num">187</div>
+          <div class="fstat-label">Contributeurs</div>
+        </div>
+        <div class="fstat reveal">
+          <div class="fstat-num">67%</div>
+          <div class="fstat-label">Objectif atteint</div>
+        </div>
+        <div class="fstat reveal">
+          <div class="fstat-num">23 j</div>
+          <div class="fstat-label">Restants</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLÈME -->
+  <section class="section">
+    <span class="section-tag reveal">Le problème</span>
+    <h2 class="section-title reveal">30€/mois pour<br><em>surveiller votre propre maison.</em></h2>
+    <div class="problem-grid">
+      <div class="problem-text reveal">
+        <p>Les systèmes de sécurité actuels comme ceux vendus chez Nature & Découvertes, Somfy ou Arlo ont un modèle économique simple : vous vendre un hardware à prix coûtant, puis vous facturer un abonnement cloud à vie pour accéder à vos propres données.</p>
+        <p>Sur 3 ans, vous aurez payé plus de 1 000€ en abonnements — pour des données hébergées sur des serveurs que vous ne contrôlez pas, dans des pays dont vous ignorez la législation.</p>
+        <p>C'est précisément ce que Sentinelle refuse.</p>
+      </div>
+      <div class="problem-cards">
+        <div class="problem-card reveal">
+          <h4>Abonnement perpétuel</h4>
+          <p>Sans abonnement actif, les alertes s'arrêtent, le stockage cloud est bloqué. Vous payez à vie pour un service qui peut disparaître du jour au lendemain.</p>
+        </div>
+        <div class="problem-card reveal">
+          <h4>Vos données chez des tiers</h4>
+          <p>Vos images, vos vidéos, vos habitudes de vie — stockées sur des serveurs tiers, soumises à leurs CGU, potentiellement exploitées à des fins commerciales.</p>
+        </div>
+        <div class="problem-card reveal">
+          <h4>IA limitée et non personnalisable</h4>
+          <p>Les zones de détection, les seuils de sensibilité, les types d'objets reconnus — tout est figé dans des algorithmes que vous ne pouvez pas ajuster.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOLUTION / FEATURES -->
+  <section class="features-section" id="solution">
+    <span class="section-tag reveal" style="color:var(--ambre)">La solution</span>
+    <h2 class="section-title reveal" style="color:var(--noir)">Six raisons de choisir<br><em>Sentinelle.</em></h2>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="fc-num">01</div>
+        <div class="fc-title">IA embarquée locale</div>
+        <div class="fc-body">Google Coral USB Accelerator — 30fps de détection en temps réel sans envoyer un seul pixel sur internet. Personnes, véhicules, animaux.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="fc-num">02</div>
+        <div class="fc-title">Zéro abonnement</div>
+        <div class="fc-body">Payez une fois le hardware. Conservez le service à vie. Aucun modèle freemium, aucun compte, aucune CGU à accepter tous les 6 mois.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="fc-num">03</div>
+        <div class="fc-title">Stockage illimité local</div>
+        <div class="fc-body">SSD externe 128Go — des semaines d'enregistrement en continu, ou des mois en mode événementiel. Vous choisissez la rétention.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="fc-num">04</div>
+        <div class="fc-title">Alertes instantanées</div>
+        <div class="fc-body">Notification Telegram avec snapshot en moins de 3 secondes post-détection. Configurable par type d'objet, zone, heure, seuil de confiance.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="fc-num">05</div>
+        <div class="fc-title">Accès distant sécurisé</div>
+        <div class="fc-body">Tailscale VPN mesh — accédez à votre flux live depuis n'importe où dans le monde sans ouvrir un seul port, sans exposer votre réseau.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="fc-num">06</div>
+        <div class="fc-title">Multi-caméras natif</div>
+        <div class="fc-body">Frigate NVR gère plusieurs sources simultanément. Ajoutez des caméras RTSP existantes sans coût supplémentaire d'infrastructure.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMENT ÇA MARCHE -->
+  <section class="steps-section" id="comment">
+    <span class="section-tag reveal">Fonctionnement</span>
+    <h2 class="section-title reveal">L'architecture de<br><em>Sentinelle.</em></h2>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-title">Capture & encodage</div>
+          <p class="step-body">La caméra IMX708 (Pi Camera Module 3) ou une caméra IP RTSP existante alimente le flux en H.264. Résolution 12MP, excellente sensibilité basse lumière. Pour l'extérieur, boîtier IP66 ou caméra IP Reolink avec IR intégré.</p>
+          <div class="step-tech">
+            <span class="tech-tag">IMX708</span>
+            <span class="tech-tag">RTSP</span>
+            <span class="tech-tag">H.264</span>
+            <span class="tech-tag">IP66</span>
+          </div>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-title">Détection IA en temps réel</div>
+          <p class="step-body">Frigate NVR orchestre l'inférence via le Google Coral USB Accelerator. Le modèle YOLOv8n tourne à 30fps avec une consommation CPU quasi nulle. Zones polygonales configurables, masques d'exclusion, seuils par classe d'objet.</p>
+          <div class="step-tech">
+            <span class="tech-tag">Frigate NVR</span>
+            <span class="tech-tag">YOLOv8n</span>
+            <span class="tech-tag">Google Coral</span>
+            <span class="tech-tag">TFLite</span>
+          </div>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-title">Stockage & archivage</div>
+          <p class="step-body">Les événements déclenchent l'enregistrement du clip + snapshot sur SSD externe. Rétention configurable (30 jours par défaut, illimité selon capacité). Aucune donnée ne quitte votre réseau local.</p>
+          <div class="step-tech">
+            <span class="tech-tag">SSD USB 3.0</span>
+            <span class="tech-tag">Rétention configurable</span>
+            <span class="tech-tag">Local-first</span>
+          </div>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">04</div>
+        <div>
+          <div class="step-title">Alertes & accès remote</div>
+          <p class="step-body">Push Telegram avec snapshot en &lt;3s. Accès live et historique via Tailscale depuis smartphone ou navigateur, partout dans le monde, sans configuration réseau complexe.</p>
+          <div class="step-tech">
+            <span class="tech-tag">Telegram Bot API</span>
+            <span class="tech-tag">Tailscale</span>
+            <span class="tech-tag">Home Assistant</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARAISON -->
+  <section class="compare-section">
+    <span class="section-tag reveal">Comparatif</span>
+    <h2 class="section-title reveal">Sentinelle vs<br><em>le marché.</em></h2>
+    <div class="compare-table reveal">
+      <div class="compare-header">
+        <span>Fonctionnalité</span>
+        <span>Sentinelle</span>
+        <span>Arlo / Somfy</span>
+        <span>Reolink Cloud</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-feat">Abonnement mensuel</span>
+        <span class="highlight-col check">0€</span>
+        <span>8–15€/mois</span>
+        <span>3–10€/mois</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-feat">Détection IA personnes/animaux</span>
+        <span class="check">✓</span>
+        <span class="check">✓</span>
+        <span class="check">✓</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-feat">Données 100% locales</span>
+        <span class="check">✓</span>
+        <span class="cross">✗</span>
+        <span class="cross">✗</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-feat">Zones de détection personnalisées</span>
+        <span class="check">✓ (polygones)</span>
+        <span>Limité</span>
+        <span class="cross">✗</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-feat">Stockage illimité</span>
+        <span class="check">✓</span>
+        <span class="cross">✗</span>
+        <span class="cross">✗</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-feat">Multi-caméras sans surcoût</span>
+        <span class="check">✓</span>
+        <span class="cross">✗</span>
+        <span class="cross">✗</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-feat">Coût sur 3 ans</span>
+        <span class="highlight-col check">~145€</span>
+        <span>~600€+</span>
+        <span>~400€+</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PALIERS -->
+  <section class="rewards-section" id="paliers">
+    <span class="section-tag reveal">Paliers de soutien</span>
+    <h2 class="section-title reveal">Choisissez votre<br><em>niveau d'engagement.</em></h2>
+    <div class="rewards-grid">
+
+      <div class="reward-card reveal">
+        <div class="reward-price">25€</div>
+        <div class="reward-name">Sentinelle Curieux</div>
+        <div class="reward-backers">48 contributeurs · Illimité</div>
+        <div class="reward-divider"></div>
+        <ul class="reward-perks">
+          <li>Accès anticipé à la documentation complète</li>
+          <li>Guide d'installation pas à pas (PDF)</li>
+          <li>Accès au Discord communauté privé</li>
+          <li>Nom dans les remerciements</li>
+        </ul>
+        <button class="reward-cta">Choisir ce palier</button>
+      </div>
+
+      <div class="reward-card featured reveal">
+        <div class="featured-badge">Le plus populaire</div>
+        <div class="reward-price">89€</div>
+        <div class="reward-name">Sentinelle Builder</div>
+        <div class="reward-backers">97 contributeurs · 50 restants</div>
+        <div class="reward-divider"></div>
+        <ul class="reward-perks">
+          <li>Kit de démarrage complet (liste composants négociés)</li>
+          <li>Image Raspberry Pi OS préconfigurée (Frigate + Tailscale)</li>
+          <li>Config Telegram bot clé en main</li>
+          <li>Accès Discord + support prioritaire 30j</li>
+          <li>Tout le palier Curieux inclus</li>
+        </ul>
+        <button class="reward-cta">Choisir ce palier</button>
+      </div>
+
+      <div class="reward-card reveal">
+        <div class="reward-price">199€</div>
+        <div class="reward-name">Sentinelle Pro</div>
+        <div class="reward-backers">12 contributeurs · 38 restants</div>
+        <div class="reward-divider"></div>
+        <ul class="reward-perks">
+          <li>Tous les éléments du palier Builder</li>
+          <li>Session d'installation visio 1h avec l'équipe</li>
+          <li>Configuration Home Assistant + dashboard personnalisé</li>
+          <li>Modèle IA fine-tuné sur vos cas d'usage spécifiques</li>
+          <li>Support prioritaire 12 mois</li>
+        </ul>
+        <button class="reward-cta">Choisir ce palier</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="timeline-section">
+    <span class="section-tag reveal" style="color:var(--ambre)">Calendrier</span>
+    <h2 class="section-title reveal" style="color:var(--noir)">De la campagne à<br><em>votre première alerte.</em></h2>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="tl-phase">Phase 1</div>
+        <div class="tl-date">Mars 2025</div>
+        <ul class="tl-tasks">
+          <li>Fin de campagne</li>
+          <li>Commandes groupées hardware</li>
+          <li>Finalisation image OS</li>
+        </ul>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="tl-phase">Phase 2</div>
+        <div class="tl-date">Avril 2025</div>
+        <ul class="tl-tasks">
+          <li>Livraison kits Builder</li>
+          <li>Documentation en ligne</li>
+          <li>Ouverture Discord</li>
+        </ul>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="tl-phase">Phase 3</div>
+        <div class="tl-date">Mai 2025</div>
+        <ul class="tl-tasks">
+          <li>Sessions Pro visio</li>
+          <li>Intégration Home Assistant</li>
+          <li>Release modèles IA v2</li>
+        </ul>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="tl-phase">Phase 4</div>
+        <div class="tl-date">Juin 2025</div>
+        <ul class="tl-tasks">
+          <li>App mobile companion</li>
+          <li>Module détection sonore</li>
+          <li>Ouverture v2 publique</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EQUIPE -->
+  <section class="team-section">
+    <span class="section-tag reveal">L'équipe</span>
+    <h2 class="section-title reveal">Construits par des<br><em>praticiens.</em></h2>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar">M</div>
+        <div>
+          <div class="team-name">Maxime D.</div>
+          <div class="team-role">Stratégie & Marketing</div>
+          <div class="team-bio">10 ans en marketing B2B SaaS, 35M€ d'ARR générés. Spécialisé produits AI et growth. Pilote la stratégie go-to-market de Sentinelle.</div>
+        </div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">A</div>
+        <div>
+          <div class="team-name">Antoine R.</div>
+          <div class="team-role">Ingénierie embarquée</div>
+          <div class="team-bio">Ingénieur systèmes embarqués, 8 ans d'expérience. Contributeur open source Frigate. Conçoit l'architecture hardware et le pipeline IA.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section" id="faq">
+    <span class="section-tag reveal">Questions fréquentes</span>
+    <h2 class="section-title reveal">Ce que vous<br><em>voulez savoir.</em></h2>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <div class="faq-q">Faut-il être développeur pour installer Sentinelle ?</div>
+        <div class="faq-a">Non. Le palier Builder inclut une image SD préconfigurée — vous flashez, vous branchez, vous êtes opérationnel en moins d'une heure. Le palier Pro inclut une session d'accompagnement visio si vous préférez une installation guidée.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">Que se passe-t-il si Raspberry Pi ou Google arrête un produit ?</div>
+        <div class="faq-a">Sentinelle repose sur des composants open source (Frigate, Tailscale). Si le Coral USB venait à être abandonné, Frigate supporte l'inférence CPU native et d'autres accélérateurs (Hailo, OpenVINO). Vous n'êtes jamais enfermé dans un écosystème propriétaire.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">Mes données sont-elles vraiment en sécurité ?</div>
+        <div class="faq-a">Vos vidéos ne quittent jamais votre réseau local. L'accès distant passe par Tailscale (chiffrement WireGuard end-to-end). Aucune donnée biométrique n'est collectée ni stockée — seuls des bounding boxes et des timestamps sont enregistrés pour les événements.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">Puis-je utiliser mes caméras existantes ?</div>
+        <div class="faq-a">Oui. Toute caméra exposant un flux RTSP est compatible : Reolink, TP-Link Tapo, Hikvision, Dahua, etc. Sentinelle peut fonctionner comme NVR IA pour votre installation existante.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">Que se passe-t-il si la campagne n'atteint pas son objectif ?</div>
+        <div class="faq-a">Conformément aux règles du financement participatif, si l'objectif de 12 500€ n'est pas atteint, vous êtes intégralement remboursé. Aucun risque financier pour les contributeurs.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-section">
+    <span class="section-tag reveal">Rejoignez le mouvement</span>
+    <h2 class="section-title reveal">
+      Votre maison mérite<br><em>mieux qu'un abonnement.</em>
+    </h2>
+    <p class="cta-sub reveal">
+      187 personnes ont déjà choisi de reprendre le contrôle de leur sécurité. Il reste 23 jours pour rejoindre la première vague Sentinelle.
+    </p>
+    <div class="cta-actions reveal">
+      <button class="btn-primary" onclick="document.getElementById('paliers').scrollIntoView({behavior:'smooth'})">Soutenir Sentinelle</button>
+      <button class="btn-secondary" onclick="document.getElementById('progression').scrollIntoView({behavior:'smooth'})">Voir la progression</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Sentinelle</div>
+    <div class="footer-text">© 2025 Sentinelle — Projet participatif</div>
+    <div class="footer-links">
+      <a href="#">Mentions légales</a>
+      <a href="#">Contact</a>
+      <a href="#">GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 60);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
